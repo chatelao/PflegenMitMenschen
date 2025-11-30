@@ -15,10 +15,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
       - name: Install Redocly CLI
-        run: npm install -g @redocly/cli
+        run: npm ci
       - name: Validate OpenAPI definition
-        run: redocly lint api/openapi.yaml
+        run: npx redocly lint api/openapi.yaml
 
   publish:
     needs: validate
@@ -37,16 +38,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
       - name: Install Redocly CLI
-        run: npm install -g @redocly/cli
+        run: npm ci
       - name: Build Redoc HTML
-        run: |
-          mkdir -p public
-          redocly build-docs api/openapi.yaml --output=public/index.html
-      - name: Copy Web App
-        run: |
-          mkdir -p public/web
-          cp -r web/app/* public/web/
+        run: npx redocly build-docs api/openapi.yaml --output=public/index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
