@@ -80,7 +80,16 @@ const apiModules = [
                 mockResponse: {
                     residentId: 'r1',
                     diagnoses: ['Hypertonie', 'Demenz'],
-                    goals: [{ description: 'Mobilität erhalten', status: 'active' }]
+                    goals: [{ description: 'Mobilität erhalten', status: 'active' }],
+                    activities: [
+                        { description: 'Ganzkörperwaschung', time: '07:30' },
+                        { description: 'Frühstück unterstützen', time: '08:00' },
+                        { description: 'Medikamente richten', time: '08:15' },
+                        { description: 'Mobilisation (Gehübungen)', time: '10:00' },
+                        { description: 'Mittagessen', time: '12:00' },
+                        { description: 'Ruhephase', time: '13:00' },
+                        { description: 'Abendpflege', time: '19:00' }
+                    ]
                 }
             }
         ]
@@ -310,28 +319,79 @@ function renderResponse(endpoint, data) {
 
     // 8. Care Plan
     if (endpoint.path === '/care/plans/{residentId}') {
-        const card = el('div', 'ui-card');
+        const container = el('div', 'ui-card');
+        container.style.overflowX = 'auto'; // Allow horizontal scrolling if needed
 
-        const diagnoses = data.diagnoses.map(d => `<div class="ui-list-item">${d}</div>`).join('');
-        const goals = data.goals.map(g => `
-            <div class="ui-list-item">
-                <span>${g.description}</span>
-                <span class="ui-badge primary">${g.status}</span>
-            </div>`).join('');
-
-        card.innerHTML = `
-            <div class="ui-grid-key-value">
-                <span class="key">Bewohner ID:</span>
-                <span>${data.residentId}</span>
-            </div>
-
-            <div class="ui-section-title">Diagnosen</div>
-            <div class="task-list">${diagnoses}</div>
-
-            <div class="ui-section-title">Ziele</div>
-            <div class="task-list">${goals}</div>
+        // Header with resident info
+        const header = el('div', 'ui-grid-key-value');
+        header.innerHTML = `
+            <span class="key">Bewohner ID:</span>
+            <span>${data.residentId}</span>
         `;
-        return card;
+        container.appendChild(header);
+
+        // 7-Day View Container
+        const calendarGrid = el('div', '');
+        calendarGrid.style.display = 'grid';
+        calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+        calendarGrid.style.gap = '10px';
+        calendarGrid.style.marginTop = '20px';
+
+        const today = new Date();
+        // Generate days: -2, -1, 0, +1, +2, +3, +4
+        const days = [-2, -1, 0, 1, 2, 3, 4].map(offset => {
+            const d = new Date(today);
+            d.setDate(today.getDate() + offset);
+            return {
+                date: d,
+                isToday: offset === 0,
+                label: d.toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit' })
+            };
+        });
+
+        days.forEach(day => {
+            const col = el('div', 'calendar-day');
+            col.style.border = '1px solid #eee';
+            col.style.borderRadius = '8px';
+            col.style.padding = '8px';
+            col.style.backgroundColor = day.isToday ? '#e8f5e9' : '#fff'; // Green tint for today
+            if (day.isToday) col.style.borderColor = '#4caf50';
+
+            // Date Header
+            const dateHeader = el('div', '', day.label);
+            dateHeader.style.fontWeight = 'bold';
+            dateHeader.style.textAlign = 'center';
+            dateHeader.style.marginBottom = '10px';
+            dateHeader.style.paddingBottom = '5px';
+            dateHeader.style.borderBottom = '1px solid #ddd';
+            if (day.isToday) dateHeader.style.color = '#2e7d32';
+
+            col.appendChild(dateHeader);
+
+            // Activities List
+            const activitiesList = el('div', 'day-activities');
+            if (data.activities && Array.isArray(data.activities)) {
+                data.activities.forEach(act => {
+                    const actItem = el('div', 'activity-item');
+                    actItem.style.fontSize = '0.85rem';
+                    actItem.style.padding = '4px';
+                    actItem.style.marginBottom = '4px';
+                    actItem.style.backgroundColor = '#f5f5f5';
+                    actItem.style.borderRadius = '4px';
+
+                    actItem.innerHTML = `
+                        <div style="font-weight:bold; font-size: 0.75rem; color: #555;">${act.time}</div>
+                        <div>${act.description}</div>
+                    `;
+                    col.appendChild(actItem);
+                });
+            }
+
+            calendarGrid.appendChild(col);
+        });
+
+        container.appendChild(calendarGrid);
+        return container;
     }
 
     // 9. Care Tasks
