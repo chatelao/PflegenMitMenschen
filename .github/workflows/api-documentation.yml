@@ -43,6 +43,10 @@ jobs:
         run: npm ci
       - name: Build Redoc HTML
         run: npx redocly build-docs api/openapi.yaml --output=public/index.html
+      - name: Copy Web App
+        run: |
+          mkdir -p public/web
+          cp -r web/app/* public/web/
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
