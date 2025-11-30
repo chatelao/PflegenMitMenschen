@@ -1,0 +1,8 @@
+# Agenten-Richtlinien
+
+## Sprache
+Alle Dokumentationen, Kommentare, Beschreibungen und die Kommunikation in diesem Repository müssen auf Deutsch verfasst werden. Technische Bezeichner (z.B. API-Pfade, Schema-Keys) bleiben in Englisch.
+
+## API-Validierung und Dokumentation
+Das Repository enthält einen GitHub Actions Workflow, der die OpenAPI-Spezifikation bei jedem Push und Merge validiert.
+Bei Pushes auf den `main`-Branch wird automatisch eine menschenlesbare API-Dokumentation generiert und auf GitHub Pages veröffentlicht.

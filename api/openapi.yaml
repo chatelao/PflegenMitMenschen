@@ -5,9 +5,15 @@ info:
     Comprehensive API solution for a Swiss nursing home group with 500+ employees.
     Covers HR, Scheduling (GAV), Resident Management, Care Planning, Care Execution, and Billing (Krankenkassen/Tarmed/BESA).
   version: 1.0.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
   - url: https://api.carehome-swiss.ch/v1
     description: Production Server
+
+security:
+  - bearerAuth: []
 
 tags:
   - name: HR
@@ -49,6 +55,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Employee'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
     post:
       tags: [HR]
       summary: Create a new employee
@@ -66,6 +76,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Employee'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   /hr/employees/{employeeId}:
     get:
@@ -86,6 +100,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found
+        '401':
+          description: Unauthorized
 
   # --- HR: Time Tracking ---
   /hr/time-tracking/clock-in:
@@ -111,6 +129,10 @@ paths:
       responses:
         '200':
           description: Clock-in successful
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   /hr/time-tracking/clock-out:
     post:
@@ -133,6 +155,10 @@ paths:
       responses:
         '200':
           description: Clock-out successful
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   /hr/absences:
     post:
@@ -148,12 +174,17 @@ paths:
       responses:
         '201':
           description: Absence reported
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   # --- Scheduling (GAV) ---
   /scheduling/roster:
     get:
       tags: [Scheduling]
       summary: Get staff roster
+      operationId: getRoster
       parameters:
         - name: startDate
           in: query
@@ -180,11 +211,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Shift'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   /scheduling/roster/generate:
     post:
       tags: [Scheduling]
       summary: Generate compliant roster based on GAV rules
+      operationId: generateRoster
       requestBody:
         required: true
         content:
@@ -203,12 +239,17 @@ paths:
       responses:
         '202':
           description: Generation started
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   # --- Residents ---
   /residents:
     get:
       tags: [Residents]
       summary: List residents
+      operationId: listResidents
       responses:
         '200':
           description: List of residents
@@ -218,9 +259,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Resident'
+        '401':
+          description: Unauthorized
     post:
       tags: [Residents]
       summary: Admit new resident
+      operationId: admitResident
       requestBody:
         required: true
         content:
@@ -230,12 +274,17 @@ paths:
       responses:
         '201':
           description: Resident admitted
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   # --- Care Planning ---
   /care/plans/{residentId}:
     get:
       tags: [CarePlanning]
       summary: Get care plan for a resident
+      operationId: getCarePlan
       parameters:
         - name: residentId
           in: path
@@ -250,9 +299,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CarePlan'
+        '404':
+          description: Care plan not found
+        '401':
+          description: Unauthorized
     put:
       tags: [CarePlanning]
       summary: Update care plan (Pflegeplanung)
+      operationId: updateCarePlan
+      parameters:
+        - name: residentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -262,12 +323,17 @@ paths:
       responses:
         '200':
           description: Plan updated
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   # --- Care Execution ---
   /care/tasks:
     get:
       tags: [CareExecution]
       summary: Get daily care tasks (Pflegemassnahmen)
+      operationId: getCareTasks
       parameters:
         - name: date
           in: query
@@ -294,12 +360,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CareTask'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   /care/tasks/{taskId}/execution:
     post:
       tags: [CareExecution]
       summary: Record task execution (Rückmeldung)
       description: Record that a task was done, including actual duration and deviations.
+      operationId: recordTaskExecution
       parameters:
         - name: taskId
           in: path
@@ -316,6 +387,10 @@ paths:
       responses:
         '201':
           description: Execution recorded
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   # --- Billing ---
   /billing/invoices/generate:
@@ -323,6 +398,7 @@ paths:
       tags: [Billing]
       summary: Generate invoices for a period
       description: Creates invoices for Health Insurance (KK) based on executed services.
+      operationId: generateInvoices
       requestBody:
         required: true
         content:
@@ -351,11 +427,16 @@ paths:
                     type: integer
                   batchId:
                     type: string
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
   /billing/services:
     post:
       tags: [Billing]
       summary: Record ad-hoc service (Leistung)
+      operationId: recordService
       requestBody:
         required: true
         content:
@@ -365,8 +446,18 @@ paths:
       responses:
         '201':
           description: Service recorded
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     # --- HR Schemas ---
     Employee:
@@ -618,27 +709,3 @@ components:
           type: number
           format: double
 
-    Invoice:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        residentId:
-          type: string
-          format: uuid
-        billingPeriodStart:
-          type: string
-          format: date
-        billingPeriodEnd:
-          type: string
-          format: date
-        totalAmount:
-          type: number
-          format: double
-        status:
-          type: string
-          enum: [draft, sent, paid, rejected]
-        xmlPayload:
-          type: string
-          description: XML data formatted for Swiss health insurance transmission (e.g., XML 4.5)
