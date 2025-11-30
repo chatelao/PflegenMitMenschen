@@ -1,0 +1,24 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Dieses Repository beinhaltet die API-Definition für eine umfassende Management-Lösung für eine Schweizer Pflegeheimgruppe.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chatelao/PflegenMitMenschen.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/chatelao/PflegenMitMenschen/issues"
+  },
+  "homepage": "https://github.com/chatelao/PflegenMitMenschen#readme",
+  "devDependencies": {
+    "@redocly/cli": "^2.12.0"
+  }
+}
