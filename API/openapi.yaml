@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: Swiss Nursing Home Management API
+  description: |
+    Comprehensive API solution for a Swiss nursing home group with 500+ employees.
+    Covers HR, Scheduling (GAV), Resident Management, Care Planning, Care Execution, and Billing (Krankenkassen/Tarmed/BESA).
+  version: 1.0.0
+servers:
+  - url: https://api.carehome-swiss.ch/v1
+    description: Production Server
+
+tags:
+  - name: HR
+    description: Human Resources, Time Tracking, Absences
+  - name: Scheduling
+    description: Staff Scheduling & GAV Compliance
+  - name: Residents
+    description: Resident Management (Heiminsassen)
+  - name: CarePlanning
+    description: Care Plans & Interventions
+  - name: CareExecution
+    description: Daily Care Tasks & Documentation
+  - name: Billing
+    description: Invoicing & Health Insurance (KK) Integration
+
+paths:
+  # --- HR: Employees ---
+  /hr/employees:
+    get:
+      tags: [HR]
+      summary: List all employees
+      operationId: listEmployees
+      parameters:
+        - name: department
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, on_leave]
+      responses:
+        '200':
+          description: List of employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+    post:
+      tags: [HR]
+      summary: Create a new employee
+      operationId: createEmployee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '201':
+          description: Employee created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+
+  /hr/employees/{employeeId}:
+    get:
+      tags: [HR]
+      summary: Get employee details
+      operationId: getEmployee
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Employee details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+
+  # --- HR: Time Tracking ---
+  /hr/time-tracking/clock-in:
+    post:
+      tags: [HR]
+      summary: Employee clock-in (Präsenz Zeiterfassung)
+      operationId: clockIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employeeId:
+                  type: string
+                  format: uuid
+                timestamp:
+                  type: string
+                  format: date-time
+                locationId:
+                  type: string
+      responses:
+        '200':
+          description: Clock-in successful
+
+  /hr/time-tracking/clock-out:
+    post:
+      tags: [HR]
+      summary: Employee clock-out
+      operationId: clockOut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employeeId:
+                  type: string
+                  format: uuid
+                timestamp:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Clock-out successful
+
+  /hr/absences:
+    post:
+      tags: [HR]
+      summary: Report absence (Krankmeldung)
+      operationId: reportAbsence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbsenceReport'
+      responses:
+        '201':
+          description: Absence reported
+
+  # --- Scheduling (GAV) ---
+  /scheduling/roster:
+    get:
+      tags: [Scheduling]
+      summary: Get staff roster
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: unitId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Roster for the period
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shift'
+
+  /scheduling/roster/generate:
+    post:
+      tags: [Scheduling]
+      summary: Generate compliant roster based on GAV rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                periodStart:
+                  type: string
+                  format: date
+                periodEnd:
+                  type: string
+                  format: date
+                constraints:
+                  $ref: '#/components/schemas/GAVConstraints'
+      responses:
+        '202':
+          description: Generation started
+
+  # --- Residents ---
+  /residents:
+    get:
+      tags: [Residents]
+      summary: List residents
+      responses:
+        '200':
+          description: List of residents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resident'
+    post:
+      tags: [Residents]
+      summary: Admit new resident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resident'
+      responses:
+        '201':
+          description: Resident admitted
+
+  # --- Care Planning ---
+  /care/plans/{residentId}:
+    get:
+      tags: [CarePlanning]
+      summary: Get care plan for a resident
+      parameters:
+        - name: residentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Care plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarePlan'
+    put:
+      tags: [CarePlanning]
+      summary: Update care plan (Pflegeplanung)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarePlan'
+      responses:
+        '200':
+          description: Plan updated
+
+  # --- Care Execution ---
+  /care/tasks:
+    get:
+      tags: [CareExecution]
+      summary: Get daily care tasks (Pflegemassnahmen)
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: assignedTo
+          in: query
+          description: Employee ID
+          schema:
+            type: string
+            format: uuid
+        - name: residentId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of tasks to be performed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CareTask'
+
+  /care/tasks/{taskId}/execution:
+    post:
+      tags: [CareExecution]
+      summary: Record task execution (Rückmeldung)
+      description: Record that a task was done, including actual duration and deviations.
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CareExecutionRecord'
+      responses:
+        '201':
+          description: Execution recorded
+
+  # --- Billing ---
+  /billing/invoices/generate:
+    post:
+      tags: [Billing]
+      summary: Generate invoices for a period
+      description: Creates invoices for Health Insurance (KK) based on executed services.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                month:
+                  type: integer
+                year:
+                  type: integer
+                residentIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: Invoices generated summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  generatedCount:
+                    type: integer
+                  batchId:
+                    type: string
+
+  /billing/services:
+    post:
+      tags: [Billing]
+      summary: Record ad-hoc service (Leistung)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRecord'
+      responses:
+        '201':
+          description: Service recorded
+
+components:
+  schemas:
+    # --- HR Schemas ---
+    Employee:
+      type: object
+      required: [firstName, lastName, ahvNumber, jobTitle]
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        ahvNumber:
+          type: string
+          description: Swiss Social Security Number (13 digits)
+          pattern: '^756\.\d{4}\.\d{4}\.\d{2}$'
+        email:
+          type: string
+          format: email
+        jobTitle:
+          type: string
+        department:
+          type: string
+        employmentPercentage:
+          type: integer
+          description: 0-100%
+        contractType:
+          type: string
+          enum: [permanent, temporary, hourly]
+        gavLevel:
+          type: string
+          description: Level according to GAV for salary classification
+
+    AbsenceReport:
+      type: object
+      required: [employeeId, startDate, reason]
+      properties:
+        employeeId:
+          type: string
+          format: uuid
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        reason:
+          type: string
+          enum: [sickness, accident, holiday, other]
+        certificateImage:
+          type: string
+          format: binary
+          description: Upload of doctor's certificate
+
+    # --- Scheduling Schemas ---
+    Shift:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        employeeId:
+          type: string
+          format: uuid
+        requiredSkill:
+          type: string
+          enum: [RN, LPN, Assistant]
+        status:
+          type: string
+          enum: [planned, confirmed, worked]
+
+    GAVConstraints:
+      type: object
+      description: Rules for GAV compliance
+      properties:
+        maxWeeklyHours:
+          type: integer
+          default: 42
+        minRestPeriodHours:
+          type: integer
+          default: 11
+        maxConsecutiveDays:
+          type: integer
+          default: 6
+
+    # --- Resident Schemas ---
+    Resident:
+      type: object
+      required: [firstName, lastName, insuranceCardNumber]
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        ahvNumber:
+          type: string
+          pattern: '^756\.\d{4}\.\d{4}\.\d{2}$'
+        insuranceCardNumber:
+          type: string
+          description: Swiss Health Insurance Card Number (VeKa)
+        insuranceProviderGLN:
+          type: string
+          description: Global Location Number of the Insurer
+        careLevel:
+          type: string
+          description: BESA or RAI-RUG level (e.g., 'BESA 4')
+        roomNumber:
+          type: string
+
+    # --- Care Schemas ---
+    CarePlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        residentId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        diagnoses:
+          type: array
+          items:
+            type: string
+        goals:
+          type: array
+          items:
+            $ref: '#/components/schemas/CareGoal'
+        interventions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CareIntervention'
+
+    CareGoal:
+      type: object
+      properties:
+        description:
+          type: string
+        targetDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [active, achieved, abandoned]
+
+    CareIntervention:
+      type: object
+      properties:
+        description:
+          type: string
+        frequency:
+          type: string
+          example: "2x daily"
+        type:
+          type: string
+          enum: [nursing, therapy, social, hygiene]
+
+    CareTask:
+      type: object
+      description: A specific instance of an intervention scheduled for a specific time
+      properties:
+        id:
+          type: string
+          format: uuid
+        residentId:
+          type: string
+          format: uuid
+        description:
+          type: string
+        scheduledTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+
+    CareExecutionRecord:
+      type: object
+      required: [executedBy]
+      properties:
+        taskId:
+          type: string
+          format: uuid
+        executedAt:
+          type: string
+          format: date-time
+        executedBy:
+          type: string
+          format: uuid
+          description: Employee ID
+        actualDurationMinutes:
+          type: integer
+        notes:
+          type: string
+        deviationReason:
+          type: string
+          description: Why the care differed from the plan (Rückmeldung)
+        vitalSigns:
+          $ref: '#/components/schemas/VitalSigns'
+
+    VitalSigns:
+      type: object
+      properties:
+        bloodPressure:
+          type: string
+        pulse:
+          type: integer
+        temperature:
+          type: number
+        weight:
+          type: number
+
+    # --- Billing Schemas ---
+    ServiceRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        residentId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+        serviceCode:
+          type: string
+          description: Tarmed or Internal Code
+        description:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+          format: double
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        residentId:
+          type: string
+          format: uuid
+        billingPeriodStart:
+          type: string
+          format: date
+        billingPeriodEnd:
+          type: string
+          format: date
+        totalAmount:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [draft, sent, paid, rejected]
+        xmlPayload:
+          type: string
+          description: XML data formatted for Swiss health insurance transmission (e.g., XML 4.5)
