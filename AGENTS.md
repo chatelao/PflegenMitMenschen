@@ -6,3 +6,6 @@ Alle Dokumentationen, Kommentare, Beschreibungen und die Kommunikation in diesem
 ## API-Validierung und Dokumentation
 Das Repository enthält einen GitHub Actions Workflow, der die OpenAPI-Spezifikation bei jedem Push und Merge validiert.
 Bei Pushes auf den `main`-Branch wird automatisch eine menschenlesbare API-Dokumentation generiert und auf GitHub Pages veröffentlicht.
+
+## Zielmarkt
+Das Zielland der Applikation ist die Schweiz. Alle fachlichen Anforderungen und Regularien orientieren sich am Schweizer Markt.
