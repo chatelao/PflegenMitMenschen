@@ -9,3 +9,6 @@ Bei Pushes auf den `main`-Branch wird automatisch eine menschenlesbare API-Dokum
 
 ## Zielmarkt
 Das Zielland der Applikation ist die Schweiz. Alle fachlichen Anforderungen und Regularien orientieren sich am Schweizer Markt.
+
+## Daten-Verwaltung
+Bei jeder Aktualisierung der Excel-Quelldateien (z.B. TARDOC, Ambulante Pauschalen) im Verzeichnis `docs/` muss die Datei `docs/codes.json` neu generiert werden. Hierfür soll ein entsprechendes Skript verwendet werden, um die Maschinenlesbarkeit sicherzustellen.
