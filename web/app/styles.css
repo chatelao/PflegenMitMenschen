@@ -1,0 +1,158 @@
+:root {
+    --header-bg: #1a252f;
+    --nav-bg: #ecf0f1;
+    --primary: #3498db;
+    --success: #2ecc71;
+    --warning: #f1c40f;
+    --danger: #e74c3c;
+    --text: #2c3e50;
+    --light-gray: #f9f9f9;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: #fff;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    background: var(--header-bg);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.status span.online {
+    color: var(--success);
+    font-weight: bold;
+}
+
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.module-nav {
+    width: 250px;
+    background: var(--nav-bg);
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+}
+
+.module-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.module-nav li {
+    border-bottom: 1px solid #ddd;
+}
+
+.module-nav button {
+    width: 100%;
+    padding: 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text);
+    transition: background 0.2s;
+}
+
+.module-nav button:hover, .module-nav button.active {
+    background: #dfe6e9;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+#content-area {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.endpoint-card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.endpoint-header {
+    padding: 10px 15px;
+    background: var(--light-gray);
+    border-bottom: 1px solid #eee;
+    font-family: monospace;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.method {
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.method.get { background-color: var(--primary); }
+.method.post { background-color: var(--success); }
+.method.put { background-color: var(--warning); color: #333; }
+.method.delete { background-color: var(--danger); }
+
+.endpoint-summary {
+    padding: 15px;
+    font-weight: 500;
+}
+
+.endpoint-actions {
+    padding: 0 15px 15px;
+}
+
+.btn-execute {
+    background: var(--header-bg);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-execute:hover {
+    background: #34495e;
+}
+
+.endpoint-response {
+    padding: 15px;
+    background: #2d3436;
+    color: #dfe6e9;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.endpoint-response.hidden {
+    display: none;
+}
+
+.response-body {
+    white-space: pre-wrap;
+    font-family: monospace;
+}

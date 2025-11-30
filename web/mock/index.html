@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pflegeheim Management Mock</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">PflegeMitMenschen</div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#">Übersicht</a></li>
+                    <li><a href="#">HR & Personal</a></li>
+                    <li><a href="#">Dienstplanung</a></li>
+                    <li><a href="#">Bewohner</a></li>
+                    <li><a href="#">Pflegeplanung</a></li>
+                    <li><a href="#">Abrechnung</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Willkommen, Benutzer</h1>
+                <div class="user-profile">AD</div>
+            </header>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>Bewohner</h2>
+                    <p class="stat">124</p>
+                    <p class="subtext">Aktuell im Haus</p>
+                </div>
+                <div class="card">
+                    <h2>Personal</h2>
+                    <p class="stat">45</p>
+                    <p class="subtext">Heute im Dienst</p>
+                </div>
+                <div class="card">
+                    <h2>Offene Aufgaben</h2>
+                    <p class="stat alert">12</p>
+                    <p class="subtext">Dringend zu erledigen</p>
+                </div>
+            </div>
+
+            <section class="details-section">
+                <h2>Aktuelle Dienstschicht</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Rolle</th>
+                                <th>Bereich</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Anna Müller</td>
+                                <td>Pflegefachfrau</td>
+                                <td>Station A</td>
+                                <td><span class="badge active">Anwesend</span></td>
+                            </tr>
+                            <tr>
+                                <td>Peter Meier</td>
+                                <td>Pflegeassistent</td>
+                                <td>Station B</td>
+                                <td><span class="badge active">Anwesend</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sarah Schmid</td>
+                                <td>Lernende</td>
+                                <td>Station A</td>
+                                <td><span class="badge break">Pause</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
