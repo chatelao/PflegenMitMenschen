@@ -94,8 +94,59 @@ const apiModules = [
                 path: '/care/tasks',
                 summary: 'Tägliche Aufgaben abrufen',
                 mockResponse: [
-                    { id: 't1', description: 'Medikamente geben', time: '08:00', status: 'pending' },
-                    { id: 't2', description: 'Wundversorgung', time: '10:00', status: 'pending' }
+                    {
+                        id: 't1',
+                        residentId: 'r1',
+                        residentName: 'Gertrud Bauer',
+                        description: 'Medikamente geben',
+                        scheduledTime: '2023-10-27T08:00:00',
+                        status: 'pending',
+                        history: [
+                            {
+                                description: 'Frühstück helfen',
+                                performedAt: '2023-10-27T07:30:00',
+                                performedBy: '456-def',
+                                performedByName: 'Petra Schmid'
+                            },
+                            {
+                                description: 'Vitalzeichen messen',
+                                performedAt: '2023-10-27T07:15:00',
+                                performedBy: '123-abc',
+                                performedByName: 'Hans Müller'
+                            }
+                        ]
+                    },
+                    {
+                        id: 't2',
+                        residentId: 'r1',
+                        residentName: 'Gertrud Bauer',
+                        description: 'Wundversorgung',
+                        scheduledTime: '2023-10-27T10:00:00',
+                        status: 'pending',
+                        history: [
+                             {
+                                description: 'Medikamente geben',
+                                performedAt: '2023-10-27T08:00:00',
+                                performedBy: '123-abc', // Same user, should not show
+                                performedByName: 'Hans Müller'
+                            },
+                            {
+                                description: 'Morgenpflege',
+                                performedAt: '2023-10-27T07:00:00',
+                                performedBy: '456-def', // Different user, should show
+                                performedByName: 'Petra Schmid'
+                            }
+                        ]
+                    },
+                    {
+                        id: 't3',
+                        residentId: 'r2',
+                        residentName: 'Walter Hofer',
+                        description: 'Insulin verabreichen',
+                        scheduledTime: '2023-10-27T08:15:00',
+                        status: 'pending',
+                        history: []
+                    }
                 ]
             }
         ]
@@ -285,16 +336,44 @@ function renderResponse(endpoint, data) {
 
     // 9. Care Tasks
     if (endpoint.path === '/care/tasks') {
+        const CURRENT_USER_ID = '123-abc';
         const list = el('div', 'task-list');
-        list.innerHTML = data.map(t => `
-            <div class="task-item">
-                <div>
-                    <div style="font-weight:bold">${t.description}</div>
-                    <small style="color:#666">Zeit: ${t.time}</small>
+
+        // Sort by scheduledTime
+        const sortedData = data.sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime));
+
+        list.innerHTML = sortedData.map(t => {
+            const time = new Date(t.scheduledTime).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' });
+
+            // Filter history: same resident, different employee
+            // "Blende vor jeder Tätigkeit die vorangehenden 3 Tätigkeiten in Kurzfassung des selben Bewohner ein, falls diese nicht durch dieselbe Pflegekraft wahrgenommen wurde."
+            const historyHtml = (t.history || [])
+                .filter(h => h.performedBy !== CURRENT_USER_ID)
+                .slice(-3) // Take last 3
+                .map(h => {
+                    const hTime = new Date(h.performedAt).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div style="font-size: 0.85em; color: #666; margin-bottom: 4px; padding-left: 10px; border-left: 2px solid #ccc;">
+                            <span style="font-weight:500">${h.description}</span>
+                            <span style="margin-left:5px">(${hTime} - ${h.performedByName})</span>
+                        </div>
+                    `;
+                }).join('');
+
+            return `
+            <div class="task-group" style="margin-bottom: 15px;">
+                ${historyHtml}
+                <div class="task-item" style="margin-top: 5px;">
+                    <div>
+                        <div style="font-weight:bold">${t.description}</div>
+                        <div style="font-size: 0.9em; color: #444;">${t.residentName}</div>
+                        <small style="color:#666">Richtzeit: ${time}</small>
+                    </div>
+                    <span class="ui-badge warning">${t.status}</span>
                 </div>
-                <span class="ui-badge warning">${t.status}</span>
             </div>
-        `).join('');
+        `;
+        }).join('');
         return list;
     }
 
