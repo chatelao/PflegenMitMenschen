@@ -95,8 +95,16 @@ const apiModules = [
                 summary: 'Tägliche Aufgaben abrufen',
                 mockResponse: [
                     { id: 't1', description: 'Medikamente geben', time: '08:00', status: 'pending' },
-                    { id: 't2', description: 'Wundversorgung', time: '10:00', status: 'pending' }
+                    { id: 't2', description: 'Wundversorgung', time: '10:00', status: 'pending' },
+                    { id: 't3', description: 'Blutdruck messen', time: '12:00', status: 'pending' },
+                    { id: 't4', description: 'Mittagessen begleiten', time: '12:30', status: 'pending' }
                 ]
+            },
+            {
+                method: 'PATCH',
+                path: '/care/tasks/{taskId}',
+                summary: 'Aufgabe aktualisieren (Status/Zeit)',
+                mockResponse: { status: 'success' }
             }
         ]
     },
@@ -141,6 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
         title.textContent = module.name;
         contentArea.appendChild(title);
 
+        // Special handling for Care Execution
+        if (module.id === 'care-execution') {
+            renderCareExecution(module);
+            return;
+        }
+
         module.endpoints.forEach(endpoint => {
             const clone = template.content.cloneNode(true);
 
@@ -167,5 +181,106 @@ document.addEventListener('DOMContentLoaded', () => {
 
             contentArea.appendChild(clone);
         });
+    }
+
+    function renderCareExecution(module) {
+        const tasksEndpoint = module.endpoints.find(e => e.method === 'GET');
+        // Deep copy to work with a fresh list each time module is loaded
+        let tasks = JSON.parse(JSON.stringify(tasksEndpoint.mockResponse));
+
+        const container = document.createElement('div');
+        container.innerHTML = `
+            <div class="care-dashboard">
+                <p>Aufgaben per Drag & Drop verschieben. Haken zum Bestätigen, X zum Ablehnen.</p>
+                <div class="endpoint-header" style="margin-bottom: 1rem;">
+                    <span class="method get">GET</span> <span class="path">/care/tasks</span>
+                </div>
+                <ul id="care-task-list" class="task-list"></ul>
+            </div>
+        `;
+        contentArea.appendChild(container);
+
+        const list = container.querySelector('#care-task-list');
+
+        function renderList() {
+            list.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.status === 'completed' ? 'completed' : ''} ${task.status === 'cancelled' ? 'cancelled' : ''}`;
+                li.draggable = true;
+                li.dataset.index = index;
+                li.dataset.id = task.id;
+
+                li.innerHTML = `
+                    <div class="task-info">
+                        <span class="task-time">${task.time}</span>
+                        <span class="task-desc">${task.description}</span>
+                    </div>
+                    <div class="task-actions">
+                        ${task.status === 'pending' ? `
+                            <button class="btn-confirm" title="Bestätigen">✓</button>
+                            <button class="btn-deny" title="Ablehnen">✗</button>
+                        ` : `<span>${task.status === 'completed' ? 'Erledigt' : 'Storniert'}</span>`}
+                    </div>
+                `;
+
+                // Event Listeners for Buttons
+                if (task.status === 'pending') {
+                    li.querySelector('.btn-confirm').onclick = () => updateTaskStatus(index, 'completed');
+                    li.querySelector('.btn-deny').onclick = () => updateTaskStatus(index, 'cancelled');
+                }
+
+                // Drag Events
+                li.addEventListener('dragstart', handleDragStart);
+                li.addEventListener('dragover', handleDragOver);
+                li.addEventListener('drop', handleDrop);
+                li.addEventListener('dragend', handleDragEnd);
+
+                list.appendChild(li);
+            });
+        }
+
+        function updateTaskStatus(index, newStatus) {
+            tasks[index].status = newStatus;
+            console.log(`PATCH /care/tasks/${tasks[index].id} - Status: ${newStatus}`);
+            renderList();
+        }
+
+        // Drag & Drop Logic
+        let draggedItem = null;
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation();
+            if (draggedItem !== this) {
+                const srcIndex = parseInt(draggedItem.dataset.index);
+                const destIndex = parseInt(this.dataset.index);
+
+                // Swap in array
+                const item = tasks.splice(srcIndex, 1)[0];
+                tasks.splice(destIndex, 0, item);
+
+                console.log(`PATCH /care/tasks/${item.id} - Rescheduled (Shift)`);
+                renderList();
+            }
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+
+        renderList();
     }
 });

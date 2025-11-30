@@ -365,6 +365,39 @@ paths:
         '401':
           description: Unauthorized
 
+  /care/tasks/{taskId}:
+    patch:
+      tags: [CareExecution]
+      summary: Update task details
+      description: Used to reschedule (shift) a task or update its status (confirm/deny).
+      operationId: updateCareTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scheduledTime:
+                  type: string
+                  format: date-time
+                status:
+                  type: string
+                  enum: [pending, in_progress, completed, cancelled]
+      responses:
+        '200':
+          description: Task updated
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
   /care/tasks/{taskId}/execution:
     post:
       tags: [CareExecution]
