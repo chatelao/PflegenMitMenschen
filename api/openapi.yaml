@@ -640,6 +640,8 @@ components:
         residentId:
           type: string
           format: uuid
+        residentName:
+          type: string
         description:
           type: string
         scheduledTime:
@@ -648,6 +650,24 @@ components:
         status:
           type: string
           enum: [pending, in_progress, completed, cancelled]
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/CareTaskHistoryItem'
+
+    CareTaskHistoryItem:
+      type: object
+      properties:
+        description:
+          type: string
+        performedAt:
+          type: string
+          format: date-time
+        performedBy:
+          type: string
+          description: Employee ID
+        performedByName:
+          type: string
 
     CareExecutionRecord:
       type: object
