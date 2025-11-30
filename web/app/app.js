@@ -114,6 +114,210 @@ const apiModules = [
     }
 ];
 
+/**
+ * Generiert HTML-Elemente für die API-Antwort basierend auf dem Endpunkt.
+ */
+function renderResponse(endpoint, data) {
+    const container = document.createElement('div');
+
+    // Helper function to create safe text nodes
+    const el = (tag, className, content) => {
+        const e = document.createElement(tag);
+        if (className) e.className = className;
+        if (content) {
+            if (typeof content === 'string') e.textContent = content;
+            else e.appendChild(content);
+        }
+        return e;
+    };
+
+    // 1. HR: Employees List
+    if (endpoint.path === '/hr/employees' && endpoint.method === 'GET') {
+        if (!Array.isArray(data)) return el('pre', '', JSON.stringify(data, null, 2));
+
+        const table = el('table', 'ui-table');
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Titel</th>
+                    <th>Abteilung</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(e => `
+                    <tr>
+                        <td>${e.firstName} ${e.lastName}</td>
+                        <td>${e.jobTitle}</td>
+                        <td>${e.department}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+        return table;
+    }
+
+    // 2. HR: Create Employee
+    if (endpoint.path === '/hr/employees' && endpoint.method === 'POST') {
+        const card = el('div', 'ui-msg-box success');
+        card.innerHTML = `
+            <div class="ui-msg-large">Mitarbeiter erstellt</div>
+            <div>ID: <strong>${data.id}</strong></div>
+            <div>Name: ${data.firstName} ${data.lastName}</div>
+            <div style="margin-top:5px"><span class="ui-badge success">Status: ${data.status}</span></div>
+        `;
+        return card;
+    }
+
+    // 3. HR: Clock In
+    if (endpoint.path === '/hr/time-tracking/clock-in') {
+        const card = el('div', 'ui-msg-box success');
+        const time = new Date(data.timestamp).toLocaleTimeString('de-CH');
+        card.innerHTML = `
+            <div class="ui-msg-large">Eingestempelt</div>
+            <div>Zeit: <strong>${time}</strong></div>
+            <div style="margin-top:5px"><span class="ui-badge success">${data.status}</span></div>
+        `;
+        return card;
+    }
+
+    // 4. Scheduling: Roster
+    if (endpoint.path === '/scheduling/roster' && endpoint.method === 'GET') {
+        const table = el('table', 'ui-table');
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>MA-ID</th>
+                    <th>Start</th>
+                    <th>Ende</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(s => {
+                    const start = new Date(s.startTime).toLocaleString('de-CH');
+                    const end = new Date(s.endTime).toLocaleTimeString('de-CH');
+                    return `
+                    <tr>
+                        <td>${s.employeeId}</td>
+                        <td>${start}</td>
+                        <td>${end}</td>
+                        <td><span class="ui-badge info">${s.status}</span></td>
+                    </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        `;
+        return table;
+    }
+
+    // 5. Scheduling: Generate
+    if (endpoint.path === '/scheduling/roster/generate') {
+        const card = el('div', 'ui-msg-box info');
+        card.innerHTML = `
+            <div class="ui-msg-large">Planung gestartet</div>
+            <div>${data.message}</div>
+            <div style="margin-top:5px">Job ID: <code>${data.jobId}</code></div>
+        `;
+        return card;
+    }
+
+    // 6. Residents: List
+    if (endpoint.path === '/residents' && endpoint.method === 'GET') {
+        const table = el('table', 'ui-table');
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Zimmer</th>
+                    <th>Pflegestufe</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(r => `
+                    <tr>
+                        <td>${r.firstName} ${r.lastName}</td>
+                        <td>${r.roomNumber}</td>
+                        <td><span class="ui-badge warning">${r.careLevel}</span></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+        return table;
+    }
+
+    // 7. Residents: Admit
+    if (endpoint.path === '/residents' && endpoint.method === 'POST') {
+        const card = el('div', 'ui-msg-box success');
+        card.innerHTML = `
+            <div class="ui-msg-large">Bewohner aufgenommen</div>
+            <div>ID: <strong>${data.id}</strong></div>
+            <div style="margin-top:5px"><span class="ui-badge success">Status: ${data.status}</span></div>
+        `;
+        return card;
+    }
+
+    // 8. Care Plan
+    if (endpoint.path === '/care/plans/{residentId}') {
+        const card = el('div', 'ui-card');
+
+        const diagnoses = data.diagnoses.map(d => `<div class="ui-list-item">${d}</div>`).join('');
+        const goals = data.goals.map(g => `
+            <div class="ui-list-item">
+                <span>${g.description}</span>
+                <span class="ui-badge primary">${g.status}</span>
+            </div>`).join('');
+
+        card.innerHTML = `
+            <div class="ui-grid-key-value">
+                <span class="key">Bewohner ID:</span>
+                <span>${data.residentId}</span>
+            </div>
+
+            <div class="ui-section-title">Diagnosen</div>
+            <div class="task-list">${diagnoses}</div>
+
+            <div class="ui-section-title">Ziele</div>
+            <div class="task-list">${goals}</div>
+        `;
+        return card;
+    }
+
+    // 9. Care Tasks
+    if (endpoint.path === '/care/tasks') {
+        const list = el('div', 'task-list');
+        list.innerHTML = data.map(t => `
+            <div class="task-item">
+                <div>
+                    <div style="font-weight:bold">${t.description}</div>
+                    <small style="color:#666">Zeit: ${t.time}</small>
+                </div>
+                <span class="ui-badge warning">${t.status}</span>
+            </div>
+        `).join('');
+        return list;
+    }
+
+    // 10. Billing: Invoices
+    if (endpoint.path === '/billing/invoices/generate') {
+        const card = el('div', 'ui-msg-box success');
+        card.innerHTML = `
+            <div class="ui-msg-large">Rechnungslauf beendet</div>
+            <div class="generated-count" style="font-size: 2.5rem; font-weight: bold; margin: 15px 0; color: #155724;">${data.generatedCount}</div>
+            <div>Rechnungen generiert</div>
+            <div style="margin-top:10px; font-size: 0.8rem; color: #666">Batch ID: ${data.batchId}</div>
+        `;
+        return card;
+    }
+
+    // Fallback: JSON Dump
+    const pre = document.createElement('pre');
+    pre.style.whiteSpace = 'pre-wrap';
+    pre.style.fontFamily = 'monospace';
+    pre.textContent = JSON.stringify(data, null, 2);
+    return pre;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const navList = document.getElementById('nav-list');
     const contentArea = document.getElementById('content-area');
@@ -153,15 +357,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const executeBtn = clone.querySelector('.btn-execute');
             const responseDiv = clone.querySelector('.endpoint-response');
-            const responseBody = clone.querySelector('.response-body');
+            const responseContent = clone.querySelector('.response-content');
 
             executeBtn.onclick = () => {
                 responseDiv.classList.remove('hidden');
-                responseBody.textContent = 'Lade...';
+                responseContent.innerHTML = '<div style="padding:10px; color:#666">Lade...</div>';
 
                 // Simuliere Netzwerklatenz
                 setTimeout(() => {
-                    responseBody.textContent = JSON.stringify(endpoint.mockResponse, null, 2);
+                    responseContent.innerHTML = '';
+                    try {
+                        const ui = renderResponse(endpoint, endpoint.mockResponse);
+                        responseContent.appendChild(ui);
+                    } catch (e) {
+                        console.error(e);
+                        responseContent.textContent = 'Fehler beim Rendern: ' + e.message;
+                    }
                 }, 600);
             };
 
