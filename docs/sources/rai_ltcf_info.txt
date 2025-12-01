@@ -1,0 +1,32 @@
+# Rai LTCF / BESA QSys Informationen
+
+Quelle: besaqsys.ch, interRAI Standards
+
+## Funktionalität
+- Bedarfserfassung zur Ermittlung der Pflegestufe (RUG / CH-Index)
+- Qualitätsindikatoren
+
+## Sichtbare/Relevante Datenfelder (interRAI LTCF Standard)
+### Stammdaten (aus Nexus)
+- Bewohner ID
+- Name
+- Geburtsdatum
+
+### Assessment (Bedarfserklärung)
+- ADL (Activities of Daily Living) Scores:
+  - Essen
+  - Körperpflege
+  - Ankleiden
+  - Toilettengang
+  - Transfer / Mobilität
+- Kognitive Leistung (CPS Scale)
+- Kommunikation / Hören / Sehen
+- Stimmung und Verhalten (Depression, Agitation)
+- Kontinenz (Blase, Darm)
+- Gesundheitszustand (Diagnosen, Schmerzen, Hautzustand)
+- Ernährungsstatus (Gewicht, Zufuhr)
+
+### Output
+- RUG-Gruppe (Resource Utilization Group)
+- CH-Index (Pflegeaufwand-Index für Abrechnung)
+- CMI (Case Mix Index)

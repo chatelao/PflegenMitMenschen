@@ -1,0 +1,28 @@
+# Nexus Heimverwaltung Informationen
+
+Quelle: nexus-schweiz.ch
+
+## Funktionalität
+- Bewohnerverwaltung (Stammdaten)
+- Finanzen & Lohnabrechnung
+- Bettendisposition
+- Schnittstelle zu BESA / RAI
+
+## Sichtbare/Relevante Datenfelder
+### Bewohnerstamm
+- Name, Vorname
+- Geburtsdatum
+- Versicherungsnummer (AHV/VeKa)
+- Eintrittsdatum
+- Zimmer / Bett
+- Pflegestufe (Importiert aus RAI/BESA)
+- Kostenträger (Krankenkasse, Kanton)
+- Taschengeldkonto-Saldo
+
+### Finanzen
+- Rechnungen (Leistungen, Hotellerie)
+- Lohn (Mitarbeiter)
+
+### Bettendisposition
+- Zimmerstatus (Frei, Belegt)
+- Belegungshistorie
