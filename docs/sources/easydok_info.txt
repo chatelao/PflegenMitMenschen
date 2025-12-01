@@ -1,0 +1,22 @@
+# EasyDOK Informationen
+
+Quelle: easydok.ch
+
+## Funktionalität
+- Pflegedokumentation & Leistungsplanung
+- Wunddokumentation
+- Sturzprotokoll
+
+## Sichtbare/Relevante Datenfelder
+### Pflegeplanung
+- Diagnosen (ICD oder Freitext)
+- Pflegeziele
+- Massnahmen (Geplant)
+- Durchführung (Ist)
+
+### Module/Protokolle
+- Wunddokumentation (Lokalisation, Stadium, Foto, Verbandswechsel)
+- Sturzprotokoll (Datum, Ort, Hergang, Folgen)
+- Vitalwerte (Blutdruck, Puls, Gewicht, BZ)
+- Schmerzprotokoll (Intensität, Lokalisation)
+- Medikation (Verschrieben, Abgegeben)

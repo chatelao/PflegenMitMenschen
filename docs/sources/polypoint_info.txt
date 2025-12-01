@@ -1,0 +1,30 @@
+# Polypoint PEP Informationen
+
+Quelle: Öffentliche Dokumentation und API-Übersicht (polypointservices.ch, docs.polypoint.ch)
+
+## Funktionalität
+- Einsatzplanung (Dienstplanung, Pikett, Absenz)
+- Zeitwirtschaft (Soll-/Ist-Plan, Stempelung)
+- Poolmanagement (Externe Ressourcen)
+
+## Sichtbare/Relevante Datenfelder (Abgeleitet)
+### Mitarbeiter (Resource)
+- ID / Personalnummer
+- Name, Vorname
+- Qualifikation / Skill
+- Vertragsdaten (Sollstunden)
+
+### Dienste (Shift)
+- Datum
+- Startzeit, Endzeit
+- Pause
+- Abteilung / Kostenstelle
+- Diensttyp (Früh, Spät, Nacht)
+
+### Absenzen
+- Typ (Ferien, Krankheit, Unfall)
+- Dauer (Von, Bis)
+
+### Schnittstellen-Features
+- REST API vorhanden
+- Import/Export von Termindaten
